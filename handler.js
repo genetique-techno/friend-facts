@@ -1,7 +1,30 @@
 'use strict';
-const AWS = require("aws-sdk");
-AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
-const dynamoDb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
+
+const wrapSuccess = stream => stream
+  .map(JSON.stringify)
+  .map(body => ({ statusCode: 200, body }))
+
+/*
+add
+  getFactNumbersList(true)
+    pick highest number
+    add one
+  put
+vote (FactNumber)
+  vote
+  [setImmortal]
+get
+  getFactNumbersList()
+  random pick
+  getFact
+get (FactNumber)
+  getFact
+fix (FactNumber)
+  updateText(author, text)
+delete (FactNumber)
+  delete
+*/
+
 
 module.exports.put = (event, context, callback) => {
 
@@ -20,25 +43,9 @@ module.exports.put = (event, context, callback) => {
   // }, (err, data) => {
   //   callback(null, { statusCode: 200, body: JSON.stringify(data) });
   // })
-
 }
 
 module.exports.get = (event, context, callback) => {
-
-// scan
-dynamoDb.scan({
-  TableName: "test",
-}, (err, data) => {
-
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify(data),
-  };
-
-  callback(null, response);
-
-})
-
 
 
   // Use this code if you don't use the http event with the LAMBDA-PROXY integration
