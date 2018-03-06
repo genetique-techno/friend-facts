@@ -1,4 +1,8 @@
 'use strict';
+const serverless = require("serverless-http");
+const express = require("express");
+const app = new express();
+// const db = require("./db");
 
 const wrapSuccess = stream => stream
   .map(JSON.stringify)
@@ -24,30 +28,24 @@ fix (FactNumber)
 delete (FactNumber)
   delete
 */
+app.post("/add", (req, res, next) => {
+  res.json({ msg: "done" });
+})
 
+app.post("/vote", (req, res, next) => {
 
-module.exports.put = (event, context, callback) => {
+})
 
-  callback(null, { statusCode: 200, body: JSON.stringify(event)});
-  // put an Item
-  // dynamoDb.put({
-  //   TableName: "test",
-  //   Item: {
-  //     Enabled: 1,
-  //     Unixstamp: Date.now(),
-  //     FactNumber: 1,
-  //     Author: "Aaron",
-  //     Test: "this is a fact",
-  //     Votes: 0
-  //   }
-  // }, (err, data) => {
-  //   callback(null, { statusCode: 200, body: JSON.stringify(data) });
-  // })
-}
+app.post("/get", (req, res, next) => {
 
-module.exports.get = (event, context, callback) => {
+})
 
+app.post("/fix", (req, res, next) => {
 
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // callback(null, { message: 'Go Serverless v1.0! Your function executed successfully!', event });
-};
+})
+
+app.post("/delete", (req, res, next) => {
+
+})
+
+module.exports.handler = serverless(app);

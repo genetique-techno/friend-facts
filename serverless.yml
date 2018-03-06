@@ -39,15 +39,11 @@ resources:
       Properties:
         TableName: test
         AttributeDefinitions:
-          - AttributeName: Enabled
-            AttributeType: N
-          - AttributeName: Unixstamp
+          - AttributeName: FactNumber
             AttributeType: N
         KeySchema:
-          - AttributeName: Enabled
+          - AttributeName: FactNumber
             KeyType: HASH
-          - AttributeName: Unixstamp
-            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
@@ -89,17 +85,23 @@ plugins:
 #    - exclude-me-dir/**
 
 functions:
-  get:
-    handler: handler.get
+  FriendFacts:
+    handler: handler.handler
     events:
       - http:
           path: get
           method: post
-  put:
-    handler: handler.put
-    events:
       - http:
-          path: put
+          path: add
+          method: post
+      - http:
+          path: vote
+          method: post
+      - http:
+          path: fix
+          method: post
+      - http:
+          path: delete
           method: post
 
 #    The following are a few example events you can configure
