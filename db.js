@@ -15,18 +15,18 @@ const TableName = "test";
 */
 
 // Executes a provided dynamoDb method and returns a highland stream
-const go = method => ({...expressions}) => new Promise((resolve, reject) => dynamoDb[method]({
+const db = method => ({...expressions}) => new Promise((resolve, reject) => dynamoDb[method]({
   TableName, ...expressions,
 }, (err, data) => {
   if (err) reject(err)
   resolve(data)
 }))
 
-exports.getFact = ({ Key }) => go("get")({Key})
+exports.getFact = ({ Key }) => db("get")({Key})
 
-exports.put = ({ Item }) => go("put")({Item})
+exports.put = ({ Item }) => db("put")({Item})
 
-exports.delete = ({ Key }) => go("delete")({Key})
+exports.delete = ({ Key }) => db("delete")({Key})
 
 exports.vote = ({ Key }) => {
   const params = {
@@ -37,7 +37,7 @@ exports.vote = ({ Key }) => {
     },
     ReturnValues: "UPDATED_NEW",
   };
-  return go("update")(params);
+  return db("update")(params);
 }
 
 exports.setImmortal = ({ Key }) => {
@@ -49,7 +49,7 @@ exports.setImmortal = ({ Key }) => {
     },
     ReturnValues: "UPDATED_NEW",
   };
-  return go("update")(params)
+  return db("update")(params)
 }
 
 exports.updateText = (author, text) => ({ Key }) => {
@@ -64,7 +64,7 @@ exports.updateText = (author, text) => ({ Key }) => {
     },
     ReturnValues: "UPDATED_NEW",
   }
-  return go("update")(params)
+  return db("update")(params)
 }
 
 exports.getFactNumbersList = (forceAll) => {
@@ -89,6 +89,6 @@ exports.getFactNumbersList = (forceAll) => {
     ProjectionExpression: "FactNumber",
   }, filters);
 
-  return go("scan")(params);
+  return db("scan")(params);
 };
 
