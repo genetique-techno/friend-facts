@@ -79,15 +79,15 @@ exports.getFactNumbersList = (justNumbers, forceAll) => {
   }
 
   const filters = forceAll ? {} : {
-    FilterExpression: "Unixstamp > :unixstamp", // OR Immortal = :immortal",
+    FilterExpression: "Unixstamp > :unixstamp or Immortal = :immortal",
     ExpressionAttributeValues: {
-      ":unixstamp": Unixstamp,
-      // ":immortal": true,
+      ":unixstamp": Unixstamp.valueOf(),
+      ":immortal": true,
     },
   }
-  const params = Object.assign({
-    ProjectionExpression: justNumbers ? "FactNumber" : "",
-  }, filters);
+  const params = Object.assign(justNumbers ? {
+    ProjectionExpression: "FactNumber",
+  } : {}, filters);
 
   return db("scan")(params);
 };

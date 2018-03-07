@@ -13,6 +13,8 @@ const EPHEMERAL = "ephemeral",
   IN_CHANNEL = "in_channel"
 
 router
+
+
   .post("/:stage?/add", async (ctx, next) => {
 
     const factNumberList = await db.getFactNumbersList(true, true)
@@ -42,9 +44,11 @@ router
     next()
 
   })
+
+
   .post("/:stage?/get", async (ctx, next) => {
 
-    const res = await db.getFactNumbersList()
+    const res = await db.getFactNumbersList(false, false);
     ctx.body = res
     next()
 
