@@ -9,32 +9,41 @@ const db = require("./db")
 const app = new Koa()
 const router = new Router()
 
-router.post("/:stage?/add", async (ctx, next) => {
-  const { text, user_name } = ctx.request.body
+router
+  .post("/:stage?/add", async (ctx, next) => {
 
-  const Item = {
-    FactNumber: Date.now(),
-    Text: text,
-    Unixstamp: Date.now(),
-    Author: user_name,
-    Votes: 0,
-    Immortal: false,
-  }
+    const { text, user_name } = ctx.request.body
+    const Item = {
+      FactNumber: Date.now(),
+      Text: text,
+      Unixstamp: Date.now(),
+      Author: user_name,
+      Votes: 0,
+      Immortal: false,
+    }
+    await db.put({Item})
+    ctx.body = "added"
+    next()
 
-  await db.put({Item})
-  ctx.body = "added"
-  next()
-})
+  })
+  .post("/:stage?/get", async (ctx, next) => {
 
-router.post("/:stage?/get", async (ctx, next) => {
-  const res = await db.getFactNumbersList()
-  ctx.body = res
-  next()
-})
+    console.log(ctx);
+    const res = await db.getFactNumbersList(true)
+    ctx.body = res
+    next()
+    
+  })
 
-app.use(bodyParser())
-app.use(router.routes())
-app.use(router.allowedMethods())
+app
+  .use(async (ctx, next) => {
+    ctx.set("Access-Control-Allow-Origin", "*")
+    ctx.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+    await next()
+  })
+  .use(bodyParser())
+  .use(router.routes())
+  .use(router.allowedMethods())
 
 module.exports.handler = serverless(app)
 
