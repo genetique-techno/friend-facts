@@ -2,7 +2,6 @@
 const AWS = require("aws-sdk");
 AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
 const dynamoDb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
-const h = require("highland");
 
 const TableName = "test";
 
@@ -16,45 +15,45 @@ const TableName = "test";
 */
 
 // Executes a provided dynamoDb method and returns a highland stream
-const go = method => ({...expressions}) => h.wrapCallback(dynamoDb[method])({
-  TableName,
-  ...expressions,
-});
+const go = method => ({...expressions}) => new Promise((resolve, reject) => dynamoDb[method]({
+  TableName, ...expressions,
+}, (err, data) => {
+  if (err) reject(err)
+  resolve(data)
+}))
 
-// put a new item
-exports.put = ({ Item }) => h.of({ Item })
-  .flatMap(go("put"))
+exports.getFact = ({ Key }) => go("get")({Key})
 
-exports.delete = ({ Key }) => h.of({ Key })
-  .flatMap(go("delete"))
+exports.put = ({ Item }) => go("put")({Item})
 
-// increments the Votes property of a particular Fact
-exports.vote = ({ Key }) => h.of(Key)
-  .map(Key => ({
+exports.delete = ({ Key }) => go("delete")({Key})
+
+exports.vote = ({ Key }) => {
+  const params = {
     Key,
     UpdateExpression: "set Votes = Votes + :incr",
     ExpressionAttributeValues: {
       ":incr": 1,
     },
     ReturnValues: "UPDATED_NEW",
-  }))
-  .flatMap(go("update"))
+  };
+  return go("update")(params);
+}
 
-// sets the Immortal property to true
-exports.setImmortal = ({ Key }) => h.of(Key)
-  .map(Key => ({
+exports.setImmortal = ({ Key }) => {
+  const params = {
     Key,
     UpdateExpression: "set Immortal = :val",
     ExpressionAttributeValues: {
       ":val": true,
     },
     ReturnValues: "UPDATED_NEW",
-  }))
-  .flatMap(go("update"))
+  };
+  return go("update")(params)
+}
 
-// allows a matching author to update the text of their fact, resets votes on the fact
-exports.updateText = (author, text) => ({ Key }) => h.of({Key})
-  .map(Key => ({
+exports.updateText = (author, text) => ({ Key }) => {
+  const params = {
     Key,
     ConditionExpression: "Author = :author",
     UpdateExpression: "set Text = :text, Votes = :votes",
@@ -64,10 +63,10 @@ exports.updateText = (author, text) => ({ Key }) => h.of({Key})
       ":votes": 0,
     },
     ReturnValues: "UPDATED_NEW",
-  }))
-  .flatMap(go("update"))
+  }
+  return go("update")(params)
+}
 
-// get a list of fact numbers within the current month, includes all Immortal facts
 exports.getFactNumbersList = (forceAll) => {
 
   let Unixstamp;
@@ -79,20 +78,17 @@ exports.getFactNumbersList = (forceAll) => {
     Unixstamp.setMilliseconds(0);
   }
 
-  return h.of(forceAll ? {} : {
-    FilterExpression: "Unixstamp > :unixstamp OR Immortal = :immortal"
+  const filters = forceAll ? {} : {
+    FilterExpression: "Unixstamp > :unixstamp", // OR Immortal = :immortal",
     ExpressionAttributeValues: {
       ":unixstamp": Unixstamp,
-      ":immortal": true,
+      // ":immortal": true,
     },
-  })
-    .map(({...expressions}) => ({
-      ProjectionExpression: "FactNumber",
-      ...expressions,
-    }))
-    .flatMap(go("scan"))
+  }
+  const params = Object.assign({
+    ProjectionExpression: "FactNumber",
+  }, filters);
+
+  return go("scan")(params);
 };
 
-// get a specific fact by providing FactNumber
-exports.getFact = ({ Key }) => h.of({Key})
-  .flatMap(go("get"))
