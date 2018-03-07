@@ -13,6 +13,7 @@
     "koa": "^2.5.0",
     "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.4.0",
+    "ramda": "^0.25.0",
     "serverless-http": "^1.5.3",
     "serverless-offline": "^3.18.0"
   }

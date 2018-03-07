@@ -67,7 +67,7 @@ exports.updateText = (author, text) => ({ Key }) => {
   return db("update")(params)
 }
 
-exports.getFactNumbersList = (forceAll) => {
+exports.getFactNumbersList = (justNumbers, forceAll) => {
 
   let Unixstamp;
   if (!forceAll) {
@@ -86,7 +86,7 @@ exports.getFactNumbersList = (forceAll) => {
     },
   }
   const params = Object.assign({
-    ProjectionExpression: "FactNumber",
+    ProjectionExpression: justNumbers ? "FactNumber" : "",
   }, filters);
 
   return db("scan")(params);
