@@ -67,7 +67,7 @@ exports.updateText = (author, text) => ({ Key }) => {
   return db("update")(params)
 }
 
-exports.getFactNumbersList = (justNumbers, forceAll) => {
+exports.scanAll = ({ justNumbers = false, forceAll = false }) => {
 
   let Unixstamp;
   if (!forceAll) {

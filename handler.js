@@ -14,10 +14,8 @@ const EPHEMERAL = "ephemeral",
 
 router
 
-
   .post("/:stage?/add", async (ctx, next) => {
-
-    const factNumberList = await db.getFactNumbersList(true, true)
+    const factNumberList = await db.scanAll({ justNumbers: true, forceAll: true })
     const FactNumber = r.compose(
       r.add(1),
       r.when(r.lt(r.__, 0), r.always(0)),
@@ -42,16 +40,17 @@ router
       type: EPHEMERAL
     }
     next()
-
   })
 
-
   .post("/:stage?/get", async (ctx, next) => {
-
-    const res = await db.getFactNumbersList(false, false);
-    ctx.body = res
+    let res = await db.scanAll({})
+    if (!res.Items.length) res = await db.scanAll({ forceAll: true })
+    const { FactNumber, Text } = res.Items[Math.floor(Math.random() * res.Items.length)]
+    ctx.body = {
+      text: `PatFact #${FactNumber}: ${Text}  _#justpatfactthings_`,
+      type: IN_CHANNEL,
+    }
     next()
-
   })
 
 app
