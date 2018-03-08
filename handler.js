@@ -43,12 +43,22 @@ router
   })
 
   .post("/:stage?/get", async (ctx, next) => {
-    let res = await db.scanAll({})
-    if (!res.Items.length) res = await db.scanAll({ forceAll: true })
-    const { FactNumber, Text, Immortal } = res.Items[Math.floor(Math.random() * res.Items.length)]
-    ctx.body = {
-      text: `PatFact #${FactNumber}: ${Text}  _#justpatfactthings_`,
-      response_type: IN_CHANNEL,
+    const { text } = ctx.request.body
+    const FactNumber = Number(text)
+    if (FactNumber) {
+      const res = await db.getFact({ Key: {FactNumber} })
+      ctx.body = {
+        text: `PatFact #${res.Item.FactNumber}: ${res.Item.Text}  _#justpatfactthings_`,
+        response_type: IN_CHANNEL,
+      }
+    } else {
+      let res = await db.scanAll({})
+      if (!res.Items.length) res = await db.scanAll({ forceAll: true })
+      const { FactNumber, Text, Immortal } = res.Items[Math.floor(Math.random() * res.Items.length)]
+      ctx.body = {
+        text: `PatFact #${FactNumber}: ${Text}  _#justpatfactthings_`,
+        response_type: IN_CHANNEL,
+      }
     }
     next()
   })
