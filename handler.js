@@ -30,14 +30,14 @@ router
       Text: text,
       Unixstamp: Date.now(),
       Author: user_name,
-      Votes: 0,
+      Votes: db.createSet([user_name]),
       Immortal: false,
     }
 
     const res = await db.put({Item})
     ctx.body = {
       text: `PatFact #${FactNumber} added by \`${user_name}\`: "${text}"`,
-      type: EPHEMERAL
+      response_type: EPHEMERAL
     }
     next()
   })
@@ -45,13 +45,33 @@ router
   .post("/:stage?/get", async (ctx, next) => {
     let res = await db.scanAll({})
     if (!res.Items.length) res = await db.scanAll({ forceAll: true })
-    const { FactNumber, Text } = res.Items[Math.floor(Math.random() * res.Items.length)]
+    const { FactNumber, Text, Immortal } = res.Items[Math.floor(Math.random() * res.Items.length)]
     ctx.body = {
       text: `PatFact #${FactNumber}: ${Text}  _#justpatfactthings_`,
-      type: IN_CHANNEL,
+      response_type: IN_CHANNEL,
     }
     next()
   })
+
+  .post("/:stage?/vote", async (ctx, next) => {
+    const { user_name, text } = ctx.request.body
+    const FactNumber = Number(text)
+    if (!FactNumber) {
+      ctx.body = {
+        text: `"${text}" is not a valid Fact Number.`,
+        response_type: EPHEMERAL,
+      }
+    } else {
+      const res = await db.vote(user_name)({ Key: {FactNumber} })
+      ctx.body = {
+        text: `Vote added for PatFact ${FactNumber}`,
+        response_type: EPHEMERAL,
+      }
+    }
+    next()
+  })
+
+
 
 app
   .use(async (ctx, next) => {

@@ -28,12 +28,15 @@ exports.put = ({ Item }) => db("put")({Item})
 
 exports.delete = ({ Key }) => db("delete")({Key})
 
-exports.vote = ({ Key }) => {
+exports.vote = (user) => ({ Key }) => {
   const params = {
     Key,
-    UpdateExpression: "set Votes = Votes + :incr",
+    UpdateExpression: "add #Votes :user",
+    ExpressionAttributeNames: {
+      "#Votes": "Votes",
+    },
     ExpressionAttributeValues: {
-      ":incr": 1,
+      ":user": dynamoDb.createSet([user]),
     },
     ReturnValues: "UPDATED_NEW",
   };
@@ -92,3 +95,4 @@ exports.scanAll = ({ justNumbers = false, forceAll = false }) => {
   return db("scan")(params);
 };
 
+exports.createSet = dynamoDb.createSet;
