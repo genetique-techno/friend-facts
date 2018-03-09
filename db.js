@@ -34,7 +34,7 @@ output.vote = (user) => ({ Key }) => {
     ExpressionAttributeValues: {
       ":user": db.createSet([user]),
     },
-    ReturnValues: "UPDATED_NEW",
+    ReturnValues: "ALL_NEW",
   };
   return doIt("update")(params);
 }
