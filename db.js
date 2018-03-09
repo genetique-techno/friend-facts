@@ -1,10 +1,6 @@
 "use strict";
-const AWS = require("aws-sdk");
-AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
-const dynamoDb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
-
-const TableName = "test";
-
+module.exports = db => ({ TableName }) => {
+const output = {};
 /* Rough Schema
   FactNumber: primary key
   Text
@@ -14,21 +10,21 @@ const TableName = "test";
   Immortal
 */
 
-// Executes a provided dynamoDb method and returns a highland stream
-const db = method => ({...expressions}) => new Promise((resolve, reject) => dynamoDb[method]({
+// Executes a provided db method and returns a highland stream
+const doIt = method => ({...expressions}) => new Promise((resolve, reject) => db[method]({
   TableName, ...expressions,
 }, (err, data) => {
   if (err) reject(err)
   resolve(data)
 }))
 
-exports.getFact = ({ Key }) => db("get")({Key})
+output.getFact = ({ Key }) => doIt("get")({Key})
 
-exports.put = ({ Item }) => db("put")({Item})
+output.put = ({ Item }) => doIt("put")({Item})
 
-exports.delete = ({ Key }) => db("delete")({Key})
+output.delete = ({ Key }) => doIt("delete")({Key})
 
-exports.vote = (user) => ({ Key }) => {
+output.vote = (user) => ({ Key }) => {
   const params = {
     Key,
     UpdateExpression: "add #Votes :user",
@@ -36,14 +32,14 @@ exports.vote = (user) => ({ Key }) => {
       "#Votes": "Votes",
     },
     ExpressionAttributeValues: {
-      ":user": dynamoDb.createSet([user]),
+      ":user": db.createSet([user]),
     },
     ReturnValues: "UPDATED_NEW",
   };
-  return db("update")(params);
+  return doIt("update")(params);
 }
 
-exports.setImmortal = ({ Key }) => {
+output.setImmortal = ({ Key }) => {
   const params = {
     Key,
     UpdateExpression: "set Immortal = :val",
@@ -52,10 +48,10 @@ exports.setImmortal = ({ Key }) => {
     },
     ReturnValues: "UPDATED_NEW",
   };
-  return db("update")(params)
+  return doIt("update")(params)
 }
 
-exports.updateText = (author, text) => ({ Key }) => {
+output.updateText = (author, text) => ({ Key }) => {
   const params = {
     Key,
     ConditionExpression: "Author = :author",
@@ -67,10 +63,10 @@ exports.updateText = (author, text) => ({ Key }) => {
     },
     ReturnValues: "UPDATED_NEW",
   }
-  return db("update")(params)
+  return doIt("update")(params)
 }
 
-exports.scanAll = ({ justNumbers = false, forceAll = false }) => {
+output.scanAll = ({ justNumbers = false, forceAll = false }) => {
 
   let Unixstamp;
   if (!forceAll) {
@@ -92,7 +88,10 @@ exports.scanAll = ({ justNumbers = false, forceAll = false }) => {
     ProjectionExpression: "FactNumber",
   } : {}, filters);
 
-  return db("scan")(params);
+  return doIt("scan")(params);
 };
 
-exports.createSet = dynamoDb.createSet;
+output.createSet = db.createSet;
+
+return output;
+}

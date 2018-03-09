@@ -4,10 +4,16 @@ const Koa = require("koa")
 const bodyParser = require("koa-bodyparser")
 const Router = require("koa-router")
 const r = require("ramda")
-const db = require("./db")
 
 const app = new Koa()
 const router = new Router()
+
+const AWS = require("aws-sdk");
+AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
+const dynamoDb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
+const db = require("./db")(dynamoDb)({
+  TableName: "test",
+})
 
 const EPHEMERAL = "ephemeral",
   IN_CHANNEL = "in_channel"
