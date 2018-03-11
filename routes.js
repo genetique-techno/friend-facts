@@ -15,15 +15,15 @@ function routes(db) {
       if (FactNumber) {
         const res = await db.getFact({ Key: {FactNumber} })
         ctx.body = {
-          text: `PatFact #${res.Item.FactNumber}: ${res.Item.Text}  _#justpatfactthings_`,
+          text: `PatFact #${res.Item.FactNumber}: ${res.Item.FactText}  _#justpatfactthings_`,
           response_type: IN_CHANNEL,
         }
       } else {
         let res = await db.scanAll({})
         if (!res.Items.length) res = await db.scanAll({ forceAll: true })
-        const { FactNumber, Text, Immortal } = res.Items[Math.floor(Math.random() * res.Items.length)]
+        const { FactNumber, FactText, Immortal } = res.Items[Math.floor(Math.random() * res.Items.length)]
         ctx.body = {
-          text: `PatFact #${FactNumber}: ${Text}  _#justpatfactthings_`,
+          text: `PatFact #${FactNumber}: ${FactText}  _#justpatfactthings_`,
           response_type: IN_CHANNEL,
         }
       }
@@ -43,7 +43,7 @@ function routes(db) {
       const { text, user_name } = ctx.request.body
       const Item = {
         FactNumber,
-        Text: text,
+        FactText: text,
         Unixstamp: Date.now(),
         Author: user_name,
         Votes: db.createSet([user_name]),
@@ -82,6 +82,24 @@ function routes(db) {
         const immortal = await db.setImmortal({ Key: {FactNumber} })
       }
 
+      next()
+    })
+
+    .post("/:stage?/fix", async (ctx, next) => {
+      const { user_name: Author, text } = ctx.request.body
+      let [FactNumber, ...FactText] = text.split(" ")
+      FactNumber = parseInt(FactNumber)
+      FactText = FactText.join(" ")
+
+      if (!FactNumber) {
+        ctx.body = {
+          text: "Not a valid PatFact number",
+          response_type: EPHEMERAL,
+        }
+        return next()
+      }
+      const res = await db.updateFactText({ Key: {FactNumber}, Author, FactText })
+      ctx.body = res
       next()
     })
 

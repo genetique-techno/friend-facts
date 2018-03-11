@@ -3,7 +3,7 @@ module.exports = db => ({ TableName }) => {
 const output = {};
 /* Rough Schema
   FactNumber: primary key
-  Text
+  FactText
   Author
   Unixstamp
   Votes
@@ -51,14 +51,14 @@ output.setImmortal = ({ Key }) => {
   return doIt("update")(params)
 }
 
-output.updateText = (author, text) => ({ Key }) => {
+output.updateFactText = ({ Key, Author, FactText }) => {
   const params = {
     Key,
     ConditionExpression: "Author = :author",
-    UpdateExpression: "set Text = :text, Votes = :votes",
+    UpdateExpression: "set FactText = :text, Votes = :votes",
     ExpressionAttributeValues: {
-      ":author": author,
-      ":text": text,
+      ":author": Author,
+      ":text": FactText,
       ":votes": 0,
     },
     ReturnValues: "UPDATED_NEW",
