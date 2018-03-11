@@ -1,6 +1,7 @@
 const Router = require("koa-router")
 const router = new Router()
 const r = require("ramda")
+const { parseText } = require("./helpers")
 
 module.exports = routes
 
@@ -87,9 +88,7 @@ function routes(db) {
 
     .post("/:stage?/fix", async (ctx, next) => {
       const { user_name: Author, text } = ctx.request.body
-      let [FactNumber, ...FactText] = text.split(" ")
-      FactNumber = parseInt(FactNumber)
-      FactText = FactText.join(" ")
+      let [FactNumber, FactText] = parseText(text);
 
       if (!FactNumber) {
         ctx.body = {
@@ -98,10 +97,24 @@ function routes(db) {
         }
         return next()
       }
-      const res = await db.updateFactText({ Key: {FactNumber}, Author, FactText })
-      ctx.body = res
+      let res;
+      try {
+        res = await db.updateFactText({ Key: {FactNumber}, Author, FactText })
+      }
+      catch (e) {
+        res = e.message === "The conditional request failed" ? "You failed to specificate the correct zip code (you ain't the author)" : e.message
+      }
+
+      ctx.body = {
+        text: res,
+        response_type: EPHEMERAL,
+      }
       next()
     })
+
+    // .post("/:stage?/delete", async (ctx, next) => {
+    //   const { user_name: Author, text } = ctx.request.body
+    // })
 
   return router
 }
