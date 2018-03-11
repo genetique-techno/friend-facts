@@ -22,8 +22,6 @@ output.getFact = ({ Key }) => doIt("get")({Key})
 
 output.put = ({ Item }) => doIt("put")({Item})
 
-output.delete = ({ Key }) => doIt("delete")({Key})
-
 output.vote = (user) => ({ Key }) => {
   const params = {
     Key,
@@ -91,7 +89,18 @@ output.scanAll = ({ justNumbers = false, forceAll = false }) => {
   return doIt("scan")(params);
 };
 
-output.createSet = db.createSet;
+output.delete = ({ Key, Author }) => {
+  const params = {
+    Key,
+    ConditionExpression: "Author = :author",
+    ExpressionAttributeValues: {
+      ":author": Author,
+    }
+  }
+  return doIt("delete")(params)
+}
+
+output.createSet = db.createSet
 
 return output;
 }

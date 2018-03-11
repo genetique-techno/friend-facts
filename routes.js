@@ -88,7 +88,7 @@ function routes(db) {
 
     .post("/:stage?/fix", async (ctx, next) => {
       const { user_name: Author, text } = ctx.request.body
-      let [FactNumber, FactText] = parseText(text);
+      let [FactNumber, FactText] = parseText(text)
 
       if (!FactNumber) {
         ctx.body = {
@@ -97,6 +97,7 @@ function routes(db) {
         }
         return next()
       }
+
       let res;
       try {
         res = await db.updateFactText({ Key: {FactNumber}, Author, FactText })
@@ -112,9 +113,32 @@ function routes(db) {
       next()
     })
 
-    // .post("/:stage?/delete", async (ctx, next) => {
-    //   const { user_name: Author, text } = ctx.request.body
-    // })
+    .post("/:stage?/delete", async (ctx, next) => {
+      const { user_name: Author, text } = ctx.request.body
+      let [FactNumber, FactText] = parseText(text)
+
+      if (!FactNumber) {
+        ctx.body = {
+          text: "Not a valid PatFact number",
+          response_type: EPHEMERAL,
+        }
+        return next()
+      }
+
+      try {
+        await db.delete({ Key: {FactNumber}, Author })
+        res = "Yo that shit mad deleted, dawg."
+      }
+      catch (e) {
+        res = e.message === "The conditional request failed" ? "You failed to specificate the correct zip code (you ain't the author)" : e.message
+      }
+
+      ctx.body = {
+        text: res,
+        response_type: EPHEMERAL,
+      }
+      next()
+    })
 
   return router
 }
