@@ -10,7 +10,7 @@ const output = {};
   Immortal
 */
 
-// Executes a provided db method and returns a highland stream
+// Executes a provided db method and returns a promise
 const doIt = method => ({...expressions}) => new Promise((resolve, reject) => db[method]({
   TableName, ...expressions,
 }, (err, data) => {
@@ -65,16 +65,20 @@ output.updateFactText = ({ Key, Author, FactText }) => {
 }
 
 output.scanAll = ({ justNumbers = false, forceAll = false }) => {
+  // justNumbers will only return fact numbers and not the full fact object
+  // forceAll option forces the scan to return ALL facts, without it the scan will only return facts from the last 30 days and immortal facts
 
   let Unixstamp;
   if (!forceAll) {
+    // create a timestamp for the beginning of a day, 30 days ago
     Unixstamp = new Date();
-    Unixstamp.setDate(0);
     Unixstamp.setHours(0);
     Unixstamp.setMinutes(0);
     Unixstamp.setMilliseconds(0);
+    Unixstamp.setDate(Unixstamp.getDate() - 30)
   }
 
+  // add a filter for facts with a creation unixstamp newer than 30 days ago, unless `forceAll` option was passed
   const filters = forceAll ? {} : {
     FilterExpression: "Unixstamp > :unixstamp or Immortal = :immortal",
     ExpressionAttributeValues: {
@@ -82,6 +86,8 @@ output.scanAll = ({ justNumbers = false, forceAll = false }) => {
       ":immortal": true,
     },
   }
+  // build the params object
+  // include a projection for FactNumber if the justNumbers option was passed
   const params = Object.assign(justNumbers ? {
     ProjectionExpression: "FactNumber",
   } : {}, filters);
