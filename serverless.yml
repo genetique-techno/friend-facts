@@ -19,7 +19,7 @@ service: test-facts
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs8.10
   stage: dev
   iamRoleStatements:
     - Effect: Allow
@@ -30,24 +30,20 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:us-east-1:047040515012:table/test"
+      Resource: "arn:aws:dynamodb:us-east-1:047040515012:table/PatFactsTable"
 
 resources:
   Resources:
     test:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: test
+        TableName: PatFactsTable
         AttributeDefinitions:
-          - AttributeName: Enabled
-            AttributeType: N
-          - AttributeName: Unixstamp
+          - AttributeName: FactNumber
             AttributeType: N
         KeySchema:
-          - AttributeName: Enabled
+          - AttributeName: FactNumber
             KeyType: HASH
-          - AttributeName: Unixstamp
-            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
@@ -89,17 +85,23 @@ plugins:
 #    - exclude-me-dir/**
 
 functions:
-  get:
-    handler: handler.get
+  FriendFacts:
+    handler: handler.handler
     events:
       - http:
           path: get
           method: post
-  put:
-    handler: handler.put
-    events:
       - http:
-          path: put
+          path: add
+          method: post
+      - http:
+          path: vote
+          method: post
+      - http:
+          path: fix
+          method: post
+      - http:
+          path: delete
           method: post
 
 #    The following are a few example events you can configure

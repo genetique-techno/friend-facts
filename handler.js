@@ -1,46 +1,35 @@
-'use strict';
+"use strict"
+const serverless = require("serverless-http")
 const AWS = require("aws-sdk");
 AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
 const dynamoDb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
+const Koa = require("koa")
+const app = new Koa()
 
-module.exports.put = (event, context, callback) => {
-
-  callback(null, { statusCode: 200, body: JSON.stringify(event)});
-  // put an Item
-  // dynamoDb.put({
-  //   TableName: "test",
-  //   Item: {
-  //     Enabled: 1,
-  //     Unixstamp: Date.now(),
-  //     FactNumber: 1,
-  //     Author: "Aaron",
-  //     Test: "this is a fact",
-  //     Votes: 0
-  //   }
-  // }, (err, data) => {
-  //   callback(null, { statusCode: 200, body: JSON.stringify(data) });
-  // })
-
-}
-
-module.exports.get = (event, context, callback) => {
-
-// scan
-dynamoDb.scan({
-  TableName: "test",
-}, (err, data) => {
-
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify(data),
-  };
-
-  callback(null, response);
-
+const bodyParser = require("koa-bodyparser")
+const db = require("./db")(dynamoDb)({
+  TableName: "PatFactsTable",
 })
+const router = require("./routes")(db)
+
+
+app
+  .use(async (ctx, next) => {
+    ctx.set("Access-Control-Allow-Origin", "*")
+    ctx.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+    await next()
+  })
+  .use(bodyParser())
+  .use(router.routes())
+  .use(router.allowedMethods())
+
+module.exports.handler = serverless(app)
 
 
 
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // callback(null, { message: 'Go Serverless v1.0! Your function executed successfully!', event });
-};
+/*
+{"token":"token","team_id":"team_id1","team_domain":"team_domain","channel_id":"channel_id",
+"channel_name":"channel_name","user_id":"user_id234","user_name":"user_name","command":"/command",
+"response_url":"https://hooks.slack.com/commands","trigger_id":"trigger_id","text":"a new pat fact",
+"rawBody":"token=token&team_id=team_id1&team_domain=team_domain&channel_id=channel_id&channel_name=channel_name&user_id=user_id234&user_name=user_name&command=%2Fcommand&response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands&trigger_id=trigger_id&text=add+%22a+new+pat+fact%22"}
+*/

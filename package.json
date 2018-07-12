@@ -1,5 +1,5 @@
 {
-  "name": "test-facts",
+  "name": "friend-facts",
   "version": "1.0.0",
   "description": "",
   "main": "handler.js",
@@ -10,6 +10,15 @@
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.202.0",
+    "koa": "^2.5.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-router": "^7.4.0",
+    "ramda": "^0.25.0",
+    "serverless-http": "^1.5.3",
     "serverless-offline": "^3.18.0"
+  },
+  "devDependencies": {
+    "csv-parse": "^2.5.0",
+    "request-promise": "^4.2.2"
   }
 }
