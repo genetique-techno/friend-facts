@@ -25,7 +25,7 @@ output.put = ({ Item }) => doIt("put")({Item})
 output.vote = (user) => ({ Key }) => {
   const params = {
     Key,
-    UpdateExpression: "add #Votes :user",
+    UpdateExpression: "ADD #Votes :user",
     ExpressionAttributeNames: {
       "#Votes": "Votes",
     },

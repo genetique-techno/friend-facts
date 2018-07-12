@@ -107,7 +107,7 @@ function routes(db) {
       const { Attributes: res } = await db.vote(user_name)({ Key: {FactNumber} })
       // set the response
       ctx.body = {
-        text: `Vote added for PatFact ${FactNumber}`,
+        text: `Vote added for PatFact #${FactNumber}`,
         response_type: EPHEMERAL,
       }
 
@@ -133,7 +133,8 @@ function routes(db) {
 
       let res;
       try {
-        res = await db.updateFactText({ Key: {FactNumber}, Author, FactText })
+        await db.updateFactText({ Key: {FactNumber}, Author, FactText })
+        res = `PatFact #${FactNumber} has been updated!`
       }
       catch (e) {
         res = e.message === "The conditional request failed" ? "You failed to specificate the correct zip code (you ain't the author)" : e.message
@@ -152,7 +153,7 @@ function routes(db) {
 
       if (!FactNumber) {
         ctx.body = {
-          text: "Not a valid PatFact number",
+          text: "Not a valid PatFact number, DUMBASS",
           response_type: EPHEMERAL,
         }
         return next()
@@ -163,7 +164,7 @@ function routes(db) {
         res = "Yo that shit mad deleted, dawg."
       }
       catch (e) {
-        res = e.message === "The conditional request failed" ? "You failed to specificate the correct zip code (you ain't the author)" : e.message
+        res = e.message === "The conditional request failed" ? "Hell naww, you didn't create that fact." : e.message
       }
 
       ctx.body = {
