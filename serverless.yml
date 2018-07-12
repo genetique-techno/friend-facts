@@ -30,14 +30,14 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:us-east-1:047040515012:table/test"
+      Resource: "arn:aws:dynamodb:us-east-1:047040515012:table/PatFactsTable"
 
 resources:
   Resources:
     test:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: test
+        TableName: PatFactsTable
         AttributeDefinitions:
           - AttributeName: FactNumber
             AttributeType: N

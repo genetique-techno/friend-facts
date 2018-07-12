@@ -8,7 +8,7 @@ const app = new Koa()
 
 const bodyParser = require("koa-bodyparser")
 const db = require("./db")(dynamoDb)({
-  TableName: "test",
+  TableName: "PatFactsTable",
 })
 const router = require("./routes")(db)
 

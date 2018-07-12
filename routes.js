@@ -107,8 +107,8 @@ function routes(db) {
       const { Attributes: res } = await db.vote(user_name)({ Key: {FactNumber} })
       // set the response
       ctx.body = {
-        text: `Vote added for PatFact #${FactNumber}`,
-        response_type: EPHEMERAL,
+        text: `Vote added for PatFact #${FactNumber} by ${user_name}`,
+        response_type: IN_CHANNEL,
       }
 
       // set fact to immortal if votes are 3 or more
