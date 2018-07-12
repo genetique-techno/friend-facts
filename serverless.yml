@@ -19,7 +19,7 @@ service: test-facts
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs8.10
   stage: dev
   iamRoleStatements:
     - Effect: Allow
